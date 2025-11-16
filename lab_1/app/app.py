@@ -1,52 +1,210 @@
 import streamlit as st
+import datetime
 import pandas as pd
-import numpy as np
-import time
+import matplotlib.pyplot as plt
+import plotly.express as px
+import pdfkit
+import tempfile
+from ydata_profiling import ProfileReport
+import seaborn as sns
+sns.set_theme(style="darkgrid")
 
-st.title("Laborator 1")
+st.title("Analiza Interactivă a Energiei")
 
 # df = pd.read_csv("../datasets/data.csv")
 
-df = pd.read_csv("https://sistemulenergetic.ro/statistics/export/2022/10/09/23/59/2025/10/09/23/59")
-df
 
-left_column, right_column = st.columns(2)
+BASE_URL = "https://sistemulenergetic.ro/statistics/export/"
+TIPURI_ENERGIE = [
+    'carbune',
+    'hidro',
+    'hidrocarburi',
+    'nuclear',
+    'eolian',
+    'fotovolt',
+    'biomasa'
+]
 
-with left_column:
-    # st.write(df)
-    #st.dataframe(df.style.highlight_max(axis=0))
-    st.write("one column")
 
-energ = st.sidebar.selectbox("Selectati tipul de energie", df.columns[1:])
+today = datetime.datetime.now()
+prev_year = today.year - 1
 
-with right_column:
-    st.write("two column")
-
-data = df[["date", energ]]
-data
-st.line_chart(df[["date", energ]], x="date")
-map_data = pd.DataFrame(
-    np.random.randn(1000, 2) / [50, 50] + [37.76, -122.4],
-    columns=["lat", "lon"]
+date_range = st.sidebar.date_input(
+    "Select your vacation for next year",
+    (datetime.date(prev_year, 1, 1), today),
+    format="MM.DD.YYYY",
+)
+selected = st.sidebar.multiselect(
+    "Selectati tipul de energie",
+    TIPURI_ENERGIE,
+    default=TIPURI_ENERGIE,
 )
 
-st.map(map_data)
+start_date, end_date = date_range
 
-x = st.slider('x')
-st.write(x, 'squared is', x * x)
+# Attach times (you can change these if needed)
+start_dt = datetime.datetime.combine(start_date, datetime.time(0, 0))
+end_dt = datetime.datetime.combine(end_date, datetime.time(23, 59))
 
-st.text_input("Your name", key="name")
 
-# You can access the value at any point with:
-st.session_state.name
+def to_path(dt: datetime.datetime) -> str:
+    return dt.strftime("%Y/%m/%d/%H/%M")
 
-if st.checkbox('Show dataframe'):
-    "Starting a long computation..."
-    latest_iteration = st.empty()
-    bar = st.progress(0)
-    for i in range(100):
-        latest_iteration.text(f'Iteration {i+1}')
-        bar.progress(i + 1)
-        time.sleep(0.1)
-    "...and now we're done!"
 
+date_path = f"{to_path(start_dt)}/{to_path(end_dt)}"
+
+df = pd.read_csv(BASE_URL + date_path)
+df.date = pd.to_datetime(df.date, errors="coerce")
+df["an"] = df.date.dt.year
+df["luna"] = df.date.dt.month
+df["zi"] = df.date.dt.day
+df["ora"] = df.date.dt.hour
+df["minute"] = df.date.dt.minute
+df["ziSapt"] = df.date.dt.weekday
+
+
+columns = df.columns
+filterd_colums = []
+for col in columns:
+    if col in TIPURI_ENERGIE:
+        if col in selected:
+            filterd_colums.append(col)
+    else:
+        filterd_colums.append(col)
+
+st.text("Datele pentru perioada selectata")
+df[filterd_colums]
+
+st.text("Date aggregate")
+if selected:
+    aggs = df[selected].agg(["min", "max", "sum", "mean", "median", "std"])
+    aggs.T
+
+# Analiza corelatiilor (heatmap)
+df_clean = df.copy()
+
+# eliminam valorile negative
+df_clean[selected] = df_clean[selected].clip(lower=0)
+
+# agregare dupa ore
+hour_order = list(range(24))
+cols = selected
+heat_data = (
+    df_clean.groupby("ora")[cols]
+    .mean()
+    .reindex(hour_order)
+    .T
+)
+
+labels = heat_data.round(0).astype(int).astype(str) + "\n" \
+         " (" + (100*heat_data.div(heat_data.max(axis=1), axis=0)).round(0).astype(int).astype(str) + "%)"
+
+# heatmap cu valori absolute (MW)
+fig, ax = plt.subplots(figsize=(15, 8))
+sns.heatmap(
+    heat_data,
+    annot=labels,
+    fmt="",
+    annot_kws={"size": 8},
+    cmap="YlOrRd",
+    linewidths=0.2,
+    cbar_kws={"label": "Media pe ora (MW)"},
+    ax=ax,
+)
+plt.title("Profil orar mediu pe tipuri de energie")
+plt.xlabel("Ora")
+plt.ylabel("Tip energie")
+plt.tight_layout()
+
+st.pyplot(fig)
+
+# agregare dupa luni
+months_order = sorted(df_clean["luna"].unique().tolist())
+
+heat_data = (
+    df_clean.groupby("luna")[selected]
+    .mean()
+    .reindex(months_order)
+    .T
+)
+
+labels = heat_data.round(0).astype(int).astype(str) + "\n" \
+         " (" + (100*heat_data.div(heat_data.max(axis=1), axis=0)).round(0).astype(int).astype(str) + "%)"
+
+# heatmap cu valori absolute (MW)
+fig, ax = plt.subplots(figsize=(14, 6))
+sns.heatmap(
+    heat_data,
+    annot=labels,
+    fmt="",
+    annot_kws={"size": 8},
+    cmap="YlOrRd",
+    linewidths=0.3,
+    cbar_kws={"label": "Media pe luna (MW)"},
+    ax=ax,
+)
+plt.title("Profil lunar mediu pe tipuri de energie")
+plt.xlabel("Luna")
+plt.ylabel("Tip energie")
+plt.tight_layout()
+st.pyplot(fig)
+
+# Aggregarea dupa luni
+
+monthly = (
+    df
+    .groupby(['an', 'luna'], as_index=False)[selected]
+    .sum()
+    .sort_values(['an', 'luna'])
+)
+
+# etichetă de tip "2025-08" pentru axa X
+monthly['year_month'] = (monthly['an'].astype(str) + '-' + monthly['luna'].astype(str).str.zfill(2))
+
+monthly_melt = monthly.melt(
+    id_vars=['an', 'luna', 'year_month'],
+    value_vars=selected,
+    var_name='tip',
+    value_name='productie'
+)
+
+fig = px.line(
+    monthly_melt,
+    x='year_month',
+    y='productie',
+    color='tip',
+    markers=True,
+    title='Producția lunară pe tipuri',
+    labels={'year_month': 'Lună', 'productie': 'Producție', 'tip': 'Tip producție'}
+)
+
+fig.update_layout(xaxis_tickangle=-45)
+st.plotly_chart(fig)
+
+if st.sidebar.button("Generează raport PDF"):
+    with st.spinner("Generez raportul..."):
+        profile = ProfileReport(
+            df,
+            title="Profil date energie",
+            explorative=True,
+            minimal=True
+        )
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".html", mode='w', encoding='utf-8') as tmp_html:
+            tmp_html.write(profile.to_html())
+            html_path = tmp_html.name
+
+        pdf_path = html_path.replace('.html', '.pdf')
+        pdfkit.from_file(html_path, pdf_path)
+
+        with open(pdf_path, 'rb') as pdf_file:
+            pdf_data = pdf_file.read()
+
+    st.sidebar.success("Raport PDF generat!")
+
+    st.sidebar.download_button(
+        label="📥 Descarcă raport PDF",
+        data=pdf_data,
+        file_name=f"raport_energie_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
+        mime="application/pdf"
+    )
