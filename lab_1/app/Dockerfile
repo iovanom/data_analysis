@@ -1,16 +1,16 @@
-FROM python:3.11-slim
+FROM debian:bullseye
 
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
     wkhtmltopdf \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiază fișierul aplicației
 COPY app.py .
 
-# Instalează dependențele Python
-RUN pip install --no-cache-dir \
+RUN pip3 install --no-cache-dir \
     streamlit \
     pandas \
     matplotlib \
