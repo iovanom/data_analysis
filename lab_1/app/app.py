@@ -97,7 +97,7 @@ heat_data = (
 )
 
 labels = heat_data.round(0).astype(int).astype(str) + "\n" \
-         " (" + (100*heat_data.div(heat_data.max(axis=1), axis=0)).round(0).astype(int).astype(str) + "%)"
+    " (" + (100*heat_data.div(heat_data.max(axis=1), axis=0)).round(0).astype(int).astype(str) + "%)"
 
 # heatmap cu valori absolute (MW)
 fig, ax = plt.subplots(figsize=(15, 8))
@@ -129,7 +129,7 @@ heat_data = (
 )
 
 labels = heat_data.round(0).astype(int).astype(str) + "\n" \
-         " (" + (100*heat_data.div(heat_data.max(axis=1), axis=0)).round(0).astype(int).astype(str) + "%)"
+    " (" + (100*heat_data.div(heat_data.max(axis=1), axis=0)).round(0).astype(int).astype(str) + "%)"
 
 # heatmap cu valori absolute (MW)
 fig, ax = plt.subplots(figsize=(14, 6))
