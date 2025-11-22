@@ -195,6 +195,8 @@ Am analizat relația dintre consum și producție prin mai multe grafice:
 
 ## 4\. Aplicația Streamlit
 
+Aplicația poate fi accessat pe adresa [https://lab1-viz-date.monitor.majeru.org/](https://lab1-viz-date.monitor.majeru.org/).
+
 ### 4.1. Structura și filtre
 
 Aplicația a fost dezvoltată în Streamlit și poartă titlul **„Analiza Interactivă a Energiei”**.
