@@ -1,0 +1,5 @@
+% no_input.tplx
+((* extends 'article.tplx' *))
+
+((* block input scoped *))
+((* endblock input *))

@@ -1,0 +1,18 @@
+Column,Descriere_RO
+CustomerID,ID unic client
+Segment,Segment client (Individual / SME)
+Region,Regiune geografică,
+Age,Vârsta clientului (ani)
+Gender,Genul clientului (M/F)
+TenureMonths,Vechime relație (luni)
+PlanType,Tip de abonament (Basic/Standard/Premium)
+NumServices,Număr de servicii active
+MonthlyRevenue,Venit mediu lunar de la client (EUR)
+NumTicketsLast6M,Număr ticket-uri suport în ultimele 6 luni
+AvgResolutionTimeHours,Timp mediu de rezolvare a solicitărilor (ore)
+LatePaymentsLast6M,Număr plăți întârziate în ultimele 6 luni
+Autopay,Clientul are plăți automate activate (0=Nu, 1=Da)
+SatisfactionScore,Scor satisfacție client (1–10)
+Churn,Clientul a părăsit serviciul (0=Nu, 1=Da)
+RetentionOfferCost,Cost estimat al ofertei de retenție pentru client (EUR)
+ExpectedMarginNext6M,Marja estimată pe 6 luni dacă clientul este păstrat (EUR)
