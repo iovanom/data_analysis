@@ -1,10 +1,14 @@
-# Laboratorul 4 - Calitatea Aerului folosind CAMS
+# Laboratorul 3 - Calitatea Aerului folosind CAMS
 
 **Autor**: Ivan Majeru
+
 **Titular disciplina**: Anatol Poiata
+
 **Disciplină**: Analiza si Vizualizarea Datelor
 
 **2025**
+
+---------------
 
 ### Raport de analiză – Calitatea Aerului folosind CAMS
 

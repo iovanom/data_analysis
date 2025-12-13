@@ -1,10 +1,14 @@
-# Laboratorul 3 - Wine Explorer
+# Laboratorul 2 - Wine Explorer
 
 **Autor**: Ivan Majeru
+
 **Titular disciplina**: Anatol Poiata
+
 **Disciplină**: Analiza si Vizualizarea Datelor
 
 **2025**
+
+--------------
 
 ### Raport de analiză – Wine Explorer
 
