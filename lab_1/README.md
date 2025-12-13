@@ -1,3 +1,11 @@
+# Laboratorul 2 - Analiza Interactivă a Energiei
+
+**Autor**: Ivan Majeru
+**Titular disciplina**: Anatol Poiata
+**Disciplină**: Analiza si Vizualizarea Datelor
+
+**2025**
+
 # Analiza Interactivă a Energiei – Lucrare de laborator Nr. 1
 
 **Autor:** _[Ivan Majeru](https://github.com/iovanom)_
